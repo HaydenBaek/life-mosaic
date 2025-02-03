@@ -22,24 +22,29 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); // Reset error state
-
+    setError("");
+  
     const res = await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
-
+  
     const data = await res.json();
-
+  
     if (!res.ok) {
       setError(data.error);
       return;
     }
-
-    // Redirect to dashboard on success
+  
+    // ✅ Save user data in localStorage
+    localStorage.setItem("user", JSON.stringify(data.user));
+  
+    // Redirect to dashboard
     router.push("/dashboard");
   };
+  
+
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -78,6 +83,15 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
               </Button>
             </div>
           </form>
+
+          {/* Create Account Button - Placed Outside the Form */}
+          <Button
+            variant="outline"
+            className="w-full mt-4"
+            onClick={() => router.push("/signup")}
+          >
+            Create Account
+          </Button>
         </CardContent>
       </Card>
     </div>

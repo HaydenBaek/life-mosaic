@@ -1,35 +1,37 @@
 import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
-import { GetDBSettings } from "@/sharedCode/common";
+import "dotenv/config";
+
+const dbConfig = {
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE,
+  port: Number(process.env.MYSQL_PORT),
+};
 
 export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
-    
-    // Connect to MySQL
-    const connection = await mysql.createConnection(GetDBSettings());
-    
-    // Query user
-    const [rows]: any = await connection.execute(
-      "SELECT * FROM users WHERE email = ?",
-      [email]
-    );
-    await connection.end();
 
-    if (rows.length === 0) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (!email || !password) {
+      return NextResponse.json({ error: "Email and password required" }, { status: 400 });
     }
 
-    const user = rows[0];
+    const connection = await mysql.createConnection(dbConfig);
+    const [users]: any = await connection.execute("SELECT * FROM users WHERE email = ? AND password = ?", [
+      email,
+      password,
+    ]);
+    await connection.end();
 
-    // Verify password (plain text for now)
-    if (user.password !== password) {
+    if (users.length === 0) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    return NextResponse.json({ message: "Login successful", user });
-
+    return NextResponse.json({ message: "Login successful", user: users[0] });
   } catch (error) {
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+    console.error("Login Error:", error);
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }
