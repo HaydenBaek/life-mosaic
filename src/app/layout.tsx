@@ -4,6 +4,14 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 
+
+export const metadata: Metadata = {
+  icons: {
+    icon: "/lifemosaic.ico", 
+    apple: "/lifemosaic.ico", 
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -20,7 +28,7 @@ export default function RootLayout({
         >
           <div className="min-h-screen">
             <Navbar />
-            <main>{children}</main> 
+            <main>{children}</main>
           </div>
         </ThemeProvider>
       </body>
