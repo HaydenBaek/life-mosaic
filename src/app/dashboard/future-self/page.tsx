@@ -31,7 +31,7 @@ export default function FutureSelfPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // ✅ Fetch user_id from localStorage
+  //    Fetch user_id from localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -49,7 +49,7 @@ export default function FutureSelfPage() {
         if (!res.ok) throw new Error("Failed to fetch future self");
   
         const data = await res.json();
-        console.log("📌 Future Self Data fetched:", data); // ✅ Debugging
+        console.log("📌 Future Self Data fetched:", data); //    Debugging
   
         if (data) {
           setFields({

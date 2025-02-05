@@ -1,12 +1,5 @@
 import { NextResponse } from "next/server";
-import mysql from "mysql2/promise";
-
-const dbConfig = {
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
-};
+import pool from "@/lib/db";
 
 // Fetch goals for a user
 export async function GET(req: Request) {
@@ -18,13 +11,11 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
 
-    const connection = await mysql.createConnection(dbConfig);
-    const [goals] = await connection.execute(
+    const [goals] = await pool.execute(
       "SELECT id, goal_name, image_url, price FROM goals WHERE user_id = ?",
       [user_id]
     );
 
-    await connection.end();
     return NextResponse.json(goals);
   } catch (error) {
     console.error("Goal Fetch Error:", error);
@@ -41,12 +32,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    const connection = await mysql.createConnection(dbConfig);
-    await connection.execute(
+    await pool.execute(
       "INSERT INTO goals (user_id, goal_name, image_url, price) VALUES (?, ?, ?, ?)", 
       [user_id, goal_name, image_url, price]
     );
-    await connection.end();
 
     return NextResponse.json({ message: "Goal added!" }, { status: 201 });
   } catch (error) {
@@ -55,7 +44,7 @@ export async function POST(req: Request) {
   }
 }
 
-// Delete a goal
+//deleting goallll
 export async function DELETE(req: Request) {
   try {
     const { id, user_id } = await req.json();
@@ -64,21 +53,23 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Goal ID and User ID are required" }, { status: 400 });
     }
 
-    const connection = await mysql.createConnection(dbConfig);
-    const [result] = await connection.execute(
-      "DELETE FROM goals WHERE id = ? AND user_id = ?",
+    //checking if the goal even exists
+    const [existingGoals]: any = await pool.execute(
+      "SELECT id FROM goals WHERE id = ? AND user_id = ?",
       [id, user_id]
     );
 
-    await connection.end();
-
-    if ((result as any).affectedRows === 0) {
-      return NextResponse.json({ error: "Goal not found or already deleted" }, { status: 404 });
+    if (existingGoals.length === 0) {
+      return NextResponse.json({ error: "Goal not found" }, { status: 404 });
     }
+
+    //deleting the goal
+    await pool.execute("DELETE FROM goals WHERE id = ? AND user_id = ?", [id, user_id]);
 
     return NextResponse.json({ message: "Goal deleted successfully!" }, { status: 200 });
   } catch (error) {
-    console.error("Goal Deletion Error:", error);
+    console.error("  Goal Deletion Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+

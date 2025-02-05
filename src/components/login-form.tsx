@@ -39,7 +39,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       return;
     }
   
-    // ✅ Save user data in localStorage
+    //    Save user data in localStorage
     localStorage.setItem("user", JSON.stringify(data.user));
   
     // Redirect to dashboard

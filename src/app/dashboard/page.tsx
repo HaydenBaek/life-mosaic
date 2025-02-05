@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LogOutIcon } from "lucide-react"; // ✅ Import Logout Icon
+import { LogOutIcon } from "lucide-react"; //    Import Logout Icon
 import { BookOpenIcon, TargetIcon, UsersIcon, CheckCircleIcon } from "lucide-react";
 
 // List of dashboard actions
@@ -86,7 +86,7 @@ export default function Dashboard() {
   }, []);
 
   const handleLogout = () => {
-    router.push("/"); // ✅ Redirect user to home page
+    router.push("/"); //    Redirect user to home page
   };
 
   return (

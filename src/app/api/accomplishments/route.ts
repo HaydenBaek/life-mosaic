@@ -1,12 +1,5 @@
 import { NextResponse } from "next/server";
-import mysql from "mysql2/promise";
-
-const dbConfig = {
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
-};
+import pool from "@/lib/db";
 
 // Fetch all accomplishments for a user
 export async function GET(req: Request) {
@@ -18,12 +11,10 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
 
-    const connection = await mysql.createConnection(dbConfig);
-    const [accomplishments] = await connection.execute(
+    const [accomplishments] = await pool.execute(
       "SELECT id, title, description, achievement_date FROM accomplishments WHERE user_id = ? ORDER BY achievement_date DESC",
       [user_id]
     );
-    await connection.end();
 
     return NextResponse.json(accomplishments);
   } catch (error) {
@@ -41,14 +32,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User ID, Title, and Date are required" }, { status: 400 });
     }
 
-    const connection = await mysql.createConnection(dbConfig);
-
-    await connection.execute(
+    await pool.execute(
       "INSERT INTO accomplishments (user_id, title, description, achievement_date) VALUES (?, ?, ?, ?)",
       [user_id, title, description, achievement_date]
     );
-
-    await connection.end();
 
     return NextResponse.json({ message: "Accomplishment added successfully!" }, { status: 201 });
   } catch (error) {
@@ -66,9 +53,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Accomplishment ID and User ID are required" }, { status: 400 });
     }
 
-    const connection = await mysql.createConnection(dbConfig);
-    await connection.execute("DELETE FROM accomplishments WHERE id = ? AND user_id = ?", [id, user_id]);
-    await connection.end();
+    await pool.execute("DELETE FROM accomplishments WHERE id = ? AND user_id = ?", [id, user_id]);
 
     return NextResponse.json({ message: "Accomplishment deleted successfully!" }, { status: 200 });
   } catch (error) {

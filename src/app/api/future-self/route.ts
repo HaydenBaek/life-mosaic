@@ -1,14 +1,7 @@
 import { NextResponse } from "next/server";
-import mysql from "mysql2/promise";
+import pool from "@/lib/db"; //    Use connection pool
 
-const dbConfig = {
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
-};
-
-// Fetch the latest Future Self data for a user
+//    GET: Fetch the latest Future Self data for a user
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -18,21 +11,20 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
 
-    const connection = await mysql.createConnection(dbConfig);
-    const [rows]: [mysql.RowDataPacket[], any] = await connection.execute(
+    //    Use pool connection
+    const [rows]: any = await pool.execute(
       "SELECT * FROM future_self WHERE user_id = ? ORDER BY id DESC LIMIT 1",
       [user_id]
     );
-    await connection.end();
 
     return NextResponse.json(rows.length > 0 ? rows[0] : {});
   } catch (error) {
-    console.error("Future Self Fetch Error:", error);
+    console.error("  Future-Self Fetch Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
-// Save or update Future Self data
+//    POST: Save or update Future Self data
 export async function POST(req: Request) {
   try {
     const data = await req.json();
@@ -58,32 +50,32 @@ export async function POST(req: Request) {
       pet2: "pet2_url",
     };
 
-    const fieldNames = Object.keys(fields).map((key) => columnMap[key]);
+    const fieldNames = Object.keys(fields).map((key) => columnMap[key]).filter(Boolean);
     const fieldValues = Object.values(fields);
 
     if (fieldNames.length === 0) {
-      return NextResponse.json({ error: "No fields provided" }, { status: 400 });
+      return NextResponse.json({ error: "No valid fields provided" }, { status: 400 });
     }
 
+    //    Construct ON DUPLICATE KEY UPDATE statement correctly
     const updates = fieldNames.map((field) => `${field} = VALUES(${field})`).join(", ");
 
-    const connection = await mysql.createConnection(dbConfig);
-    await connection.execute(
+    //    Use connection pool
+    await pool.execute(
       `INSERT INTO future_self (user_id, ${fieldNames.join(", ")}) 
        VALUES (?, ${fieldValues.map(() => "?").join(", ")}) 
        ON DUPLICATE KEY UPDATE ${updates}`,
       [user_id, ...fieldValues]
     );
-    await connection.end();
 
     return NextResponse.json({ message: "Future Self saved successfully!" }, { status: 201 });
   } catch (error) {
-    console.error("Future Self Save Error:", error);
+    console.error("  Future-Self Save Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
-// Remove a specific image URL from Future Self
+//    PATCH: Remove a specific image URL from Future Self
 export async function PATCH(req: Request) {
   try {
     const { user_id, field } = await req.json();
@@ -114,16 +106,12 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Invalid field name" }, { status: 400 });
     }
 
-    const connection = await mysql.createConnection(dbConfig);
-    await connection.execute(
-      `UPDATE future_self SET ${columnName} = NULL WHERE user_id = ?`,
-      [user_id]
-    );
-    await connection.end();
+    //    Use connection pool
+    await pool.execute(`UPDATE future_self SET ${columnName} = NULL WHERE user_id = ?`, [user_id]);
 
     return NextResponse.json({ message: "Image deleted successfully!" }, { status: 200 });
   } catch (error) {
-    console.error("Future Self Image Delete Error:", error);
+    console.error("  Future-Self Image Delete Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

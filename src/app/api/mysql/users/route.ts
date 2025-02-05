@@ -1,17 +1,14 @@
 import { NextResponse, NextRequest } from "next/server";
-import mysql from "mysql2/promise";
-import { GetDBSettings } from "@/sharedCode/common";
+import pool from "@/lib/db";
 
 // GET: Fetch all users
 export async function GET() {
   try {
     console.log("Fetching all users");
 
-    const connection = await mysql.createConnection(GetDBSettings());
-    const [users] = await connection.execute(
+    const [users] = await pool.execute(
       "SELECT id, email, name FROM users" // Excludes passwords
     );
-    await connection.end();
 
     return NextResponse.json(users);
   } catch (error) {
@@ -29,12 +26,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const connection = await mysql.createConnection(GetDBSettings());
-    const [result]: any = await connection.execute(
+    const [result]: any = await pool.execute(
       "INSERT INTO users (email, password, name) VALUES (?, ?, ?)",
       [email, password, name]
     );
-    await connection.end();
 
     return NextResponse.json({ message: "User created successfully", userId: result.insertId });
   } catch (error) {
