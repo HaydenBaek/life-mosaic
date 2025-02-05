@@ -7,20 +7,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle } from "lucide-react"; // ✅ Correct icons
+import { AlertCircle, CheckCircle } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null); // ✅ Fix error type
-  const [success, setSuccess] = useState<string | null>(null); // ✅ Fix success type
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null); // Reset error
-    setSuccess(null); // Reset success
+    setError(null);
+    setSuccess(null);
 
     try {
       const res = await fetch("/api/signup", {
@@ -30,7 +30,7 @@ export default function SignupPage() {
       });
 
       const data = await res.json();
-      console.log("📌 Signup Response:", data);
+      console.log("Signup Response:", data);
 
       if (!res.ok) {
         setError(data.error);
@@ -38,9 +38,8 @@ export default function SignupPage() {
       }
 
       setSuccess("Account created successfully! Redirecting to login...");
-      setTimeout(() => router.push("/"), 2000); // ✅ Redirect after 2 seconds
+      setTimeout(() => router.push("/"), 2000);
     } catch (error) {
-      console.error("Signup Error:", error);
       setError("Something went wrong. Please try again.");
     }
   };

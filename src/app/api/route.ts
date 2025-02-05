@@ -1,17 +1,12 @@
-// import the Request and Response classes
+import { NextResponse, NextRequest } from "next/server";
 
-import { NextResponse, NextRequest } from 'next/server'
+//Practicing for response handling
 
-// define and export the GET handler function
-
-export async function GET(request: Request) {
-  // this is going to be my JSON response
-
+// GET request handler
+export async function GET(request: NextRequest) {
   const results = {
-    message: 'Hello World!',
-  }
+    message: "Hello World!",
+  };
 
-  // response with the JSON object
-
-  return NextResponse.json(results)
+  return NextResponse.json(results);
 }

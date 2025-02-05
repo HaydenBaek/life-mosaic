@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ModeToggle } from "./ModeToggle";
-import { PuzzleIcon } from "lucide-react"; // Updated icon to PuzzleIcon
+import { PaletteIcon } from "lucide-react"; // 🎨 Import Palette Icon
 
 function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -19,12 +19,14 @@ function Navbar() {
   return (
     <nav className="border-b">
       <div className="flex h-16 items-center px-4 container mx-auto">
+
         {/* LEFT SIDE - LOGO */}
         <Link
-          href={isLoggedIn ? "/dashboard" : "/"} // Dynamically change the link
+          href={isLoggedIn ? "/dashboard" : "/"}
           className="flex items-center gap-2 font-semibold text-2xl mr-6 font-mono hover:opacity-80 transition-opacity"
         >
-          <PuzzleIcon className="size-8 text-emerald-500" /> {/* Updated to PuzzleIcon */}
+          {/* 🎨 Palette icon in Gold for contrast */}
+          <PaletteIcon className="size-8 text-yellow-500" />
           <span className="bg-[hsl(var(--primary))] bg-clip-text text-transparent">
             LifeMosaic
           </span>

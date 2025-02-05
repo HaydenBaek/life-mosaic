@@ -19,10 +19,10 @@ export async function POST(req: Request) {
     }
 
     const connection = await mysql.createConnection(dbConfig);
-    const [users]: any = await connection.execute("SELECT * FROM users WHERE email = ? AND password = ?", [
-      email,
-      password,
-    ]);
+    const [users]: any = await connection.execute(
+      "SELECT id, email FROM users WHERE email = ? AND password = ?", 
+      [email, password]
+    );
     await connection.end();
 
     if (users.length === 0) {
@@ -32,6 +32,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "Login successful", user: users[0] });
   } catch (error) {
     console.error("Login Error:", error);
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

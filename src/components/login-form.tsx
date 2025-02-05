@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react"; // Error Icon
 import {
   Card,
   CardContent,
@@ -43,56 +45,56 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     // Redirect to dashboard
     router.push("/dashboard");
   };
-  
-
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>Enter your email and password</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin}>
-            <div className="flex flex-col gap-6">
-              {error && <p className="text-red-500">{error}</p>}
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full">
-                Login
-              </Button>
-            </div>
-          </form>
+    <div className="flex flex-col items-center justify-center min-h-screen p-8">
+      <Card className="p-6 w-full max-w-lg">
+        <h2 className="text-2xl font-semibold mb-4">Login</h2>
 
-          {/* Create Account Button - Placed Outside the Form */}
-          <Button
-            variant="outline"
-            className="w-full mt-4"
-            onClick={() => router.push("/signup")}
-          >
-            Create Account
-          </Button>
-        </CardContent>
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive" className="mb-4 flex items-center">
+            <AlertCircle className="w-5 h-5 mr-2 text-red-500" />
+            <div>
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </div>
+          </Alert>
+        )}
+
+        {/* Login Form */}
+        <form onSubmit={handleLogin}>
+          <div className="flex flex-col gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="********"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full">
+              Login
+            </Button>
+            <Button variant="outline" className="w-full" onClick={() => router.push("/signup")}>
+              Create Account
+            </Button>
+          </div>
+        </form>
       </Card>
     </div>
   );

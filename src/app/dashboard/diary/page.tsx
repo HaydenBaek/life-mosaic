@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -23,9 +23,8 @@ export default function DiaryPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>([]);
-  const [userId, setUserId] = useState<number | null>(null); // Store user_id
+  const [userId, setUserId] = useState<number | null>(null);
 
-  // ✅ Fetch user_id from localStorage (Assuming it's stored after login)
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -34,9 +33,8 @@ export default function DiaryPage() {
     }
   }, []);
 
-  // ✅ Fetch diary entries **ONLY for the logged-in user**
   useEffect(() => {
-    if (!userId) return; // Ensure user ID is set before fetching
+    if (!userId) return;
 
     const fetchEntries = async () => {
       try {
@@ -50,7 +48,7 @@ export default function DiaryPage() {
     };
 
     fetchEntries();
-  }, [userId]); // Run when userId is set
+  }, [userId]);
 
   const handleSave = async () => {
     if (!selectedDate || !entry.trim()) {
@@ -87,16 +85,41 @@ export default function DiaryPage() {
       setEntry("");
       setSelectedDate(new Date());
 
-      // ✅ Refresh the diary entries list
       setDiaryEntries([{ id: Date.now(), entry_date: format(selectedDate, "yyyy-MM-dd"), content: entry }, ...diaryEntries]);
     } catch (error) {
       setError("Something went wrong. Please try again.");
     }
   };
 
+  const handleDelete = async (id: number) => {
+    try {
+      const res = await fetch("/api/diary", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, user_id: userId }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to delete entry.");
+      }
+
+      setDiaryEntries(diaryEntries.filter((entry) => entry.id !== id));
+    } catch (error) {
+      setError("Could not delete entry.");
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-8">
-      {/* Title Section */}
+    <div className="flex flex-col items-center justify-center min-h-screen p-8 relative">
+
+      <Button
+        variant="outline"
+        className="absolute top-4 left-4"
+        onClick={() => router.push("/dashboard")}
+      >
+        ← Back to Dashboard
+      </Button>
+
       <div className="text-center mb-6">
         <h2 className="text-3xl font-semibold text-[hsl(var(--foreground))]">Diary</h2>
         <p className="text-muted-foreground text-lg mt-2">
@@ -105,11 +128,9 @@ export default function DiaryPage() {
       </div>
 
       <Card className="p-6 w-full max-w-lg">
-        {/* Alerts */}
         {error && <p className="text-red-500">{error}</p>}
         {success && <p className="text-green-500">{success}</p>}
 
-        {/* Date Picker */}
         <div className="mb-4">
           <Popover>
             <PopoverTrigger asChild>
@@ -124,7 +145,6 @@ export default function DiaryPage() {
           </Popover>
         </div>
 
-        {/* Diary Entry Textarea */}
         <Textarea
           placeholder="Write your thoughts here..."
           value={entry}
@@ -132,16 +152,11 @@ export default function DiaryPage() {
           className="h-40"
         />
 
-        {/* Buttons */}
-        <div className="flex justify-between mt-4">
-          <Button variant="outline" onClick={() => router.push("/dashboard")}>
-            Back
-          </Button>
-          <Button onClick={handleSave}>Save</Button>
+        <div className="mt-4">
+          <Button onClick={handleSave} className="w-full">Save</Button>
         </div>
       </Card>
 
-      {/* ✅ Display Diary Entries for Logged-in User */}
       <div className="mt-10 w-full max-w-lg">
         <h3 className="text-xl font-semibold mb-4">Your Entries</h3>
         {diaryEntries.length === 0 ? (
@@ -149,9 +164,14 @@ export default function DiaryPage() {
         ) : (
           <div className="space-y-4">
             {diaryEntries.map((entry) => (
-              <Card key={entry.id} className="p-4 border">
-                <p className="text-sm text-gray-500">{format(new Date(entry.entry_date), "PPP")}</p>
-                <p className="text-md mt-2">{entry.content}</p>
+              <Card key={entry.id} className="p-4 border flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-500">{format(new Date(entry.entry_date), "PPP")}</p>
+                  <p className="text-md mt-2">{entry.content}</p>
+                </div>
+                <Button variant="destructive" size="icon" onClick={() => handleDelete(entry.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </Card>
             ))}
           </div>

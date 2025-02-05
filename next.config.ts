@@ -1,14 +1,13 @@
-import { NextConfig } from 'next';
+import type { NextConfig } from "next";
 
 /** @type {NextConfig} */
 const nextConfig: NextConfig = {
   env: {
-    // Production Environment Variables
-    host: process.env.MYSQL_HOST || 'prod-db-host.com',
-    port: process.env.MYSQL_PORT || '3306',
-    user: process.env.MYSQL_USER || 'prod_user',
-    password: process.env.MYSQL_PASSWORD || 'prod_password',
-    database: process.env.MYSQL_DATABASE || 'prod_db_name',
+    MYSQL_HOST: process.env.MYSQL_HOST || "prod-db-host.com",
+    MYSQL_PORT: process.env.MYSQL_PORT || "3306",
+    MYSQL_USER: process.env.MYSQL_USER || "prod_user",
+    MYSQL_PASSWORD: process.env.MYSQL_PASSWORD || "prod_password",
+    MYSQL_DATABASE: process.env.MYSQL_DATABASE || "prod_db_name",
   },
 };
 

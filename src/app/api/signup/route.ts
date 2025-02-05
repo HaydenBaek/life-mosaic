@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
-import "dotenv/config"; // ✅ Load environment variables
+import "dotenv/config"; // Load environment variables
 
-// ✅ Use environment variables for database config
+// Database configuration
 const dbConfig = {
   host: process.env.MYSQL_HOST || "localhost",
   user: process.env.MYSQL_USER || "root",
@@ -15,25 +15,25 @@ export async function POST(req: Request) {
   try {
     const { name, email, password } = await req.json();
 
-    // ✅ Validate input fields
+    // Validate input fields
     if (!name || !email || !password) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    // ✅ Create a database connection
     const connection = await mysql.createConnection(dbConfig);
 
-    // ✅ Check if email already exists
+    // Check if the email is already in use
     const [existingUsers]: any = await connection.execute(
       "SELECT id FROM users WHERE email = ?",
       [email]
     );
+
     if (existingUsers.length > 0) {
       await connection.end();
       return NextResponse.json({ error: "Email already in use" }, { status: 400 });
     }
 
-    // ✅ Insert the new user into the database (Plain Password)
+    // Insert the new user into the database (Plain Password)
     const [result]: any = await connection.execute(
       "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
       [name, email, password]
@@ -41,16 +41,17 @@ export async function POST(req: Request) {
 
     await connection.end();
 
-    // ✅ Return success response with user data
-    return NextResponse.json({
-      message: "User registered successfully!",
-      user: {
-        id: result.insertId,
-        name,
-        email,
+    return NextResponse.json(
+      {
+        message: "User registered successfully",
+        user: {
+          id: result.insertId,
+          name,
+          email,
+        },
       },
-    }, { status: 201 });
-
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Signup Error:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

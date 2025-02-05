@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,125 +8,327 @@ import { Input } from "@/components/ui/input";
 
 export default function FutureSelfPage() {
   const router = useRouter();
+  const [userId, setUserId] = useState<number | null>(null);
+  const [hoveredField, setHoveredField] = useState<string | null>(null);
 
-  // for left side
-  const [house1, setHouse1] = useState("");
-  const [house2, setHouse2] = useState("");
-  const [car1, setCar1] = useState("");
-  const [car2, setCar2] = useState("");
-  const [boat, setBoat] = useState("");
+  const [fields, setFields] = useState<{ [key: string]: string }>({
+    career: "",
+    ultimateGoal: "",
+    house1: "",
+    house2: "",
+    car1: "",
+    car2: "",
+    boat: "",
+    hobby1: "",
+    hobby2: "",
+    hobby3: "",
+    hobby4: "",
+    pet1: "",
+    pet2: "",
+  });
+  
 
-  // for right side
-  const [career, setCareer] = useState("");
-  const [ultimateGoal, setUltimateGoal] = useState(""); 
-  const [hobby1, setHobby1] = useState("");
-  const [hobby2, setHobby2] = useState("");
-  const [hobby3, setHobby3] = useState("");
-  const [hobby4, setHobby4] = useState("");
-  const [pet1, setPet1] = useState("");
-  const [pet2, setPet2] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const handleSave = () => {
-    alert("Future Self saved! (Database integration needed)");
+  // ✅ Fetch user_id from localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      setUserId(user.id);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+  
+    const fetchFutureSelf = async () => {
+      try {
+        const res = await fetch(`/api/future-self?user_id=${userId}`);
+        if (!res.ok) throw new Error("Failed to fetch future self");
+  
+        const data = await res.json();
+        console.log("📌 Future Self Data fetched:", data); // ✅ Debugging
+  
+        if (data) {
+          setFields({
+            career: data.career_url || "",
+            ultimateGoal: data.ultimate_goal_url || "",
+            house1: data.house1_url || "",
+            house2: data.house2_url || "",
+            car1: data.car1_url || "",
+            car2: data.car2_url || "",
+            boat: data.boat_url || "",
+            hobby1: data.hobby1_url || "",
+            hobby2: data.hobby2_url || "",
+            hobby3: data.hobby3_url || "",
+            hobby4: data.hobby4_url || "",
+            pet1: data.pet1_url || "",
+            pet2: data.pet2_url || "",
+          });
+        } else {
+          console.warn("⚠️ No future self data found.");
+        }
+      } catch (error) {
+        console.error("❌ Failed to load future self data:", error);
+      }
+    };
+  
+    fetchFutureSelf();
+  }, [userId]);
+  
+  
+
+
+  const handleSave = async () => {
+    if (!userId) {
+      setError("User not authenticated.");
+      return;
+    }
+
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const res = await fetch("/api/future-self", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId, ...fields }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error);
+        return;
+      }
+
+      setSuccess("Future Self saved successfully!");
+    } catch {
+      setError("Something went wrong. Please try again.");
+    }
+  };
+
+  const handleDeleteImage = async (field: string) => {
+    if (!userId) return;
+
+    try {
+      const res = await fetch("/api/future-self", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId, field }),
+      });
+
+      if (res.ok) {
+        setFields((prev) => ({ ...prev, [field]: "" }));
+      }
+    } catch {
+      console.error("Failed to delete image.");
+    }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-8">
-      <h2 className="text-3xl font-semibold mb-6">Customize Your Future Self</h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-6xl">
-        
-        {/* Left Side: Dream Life */}
-        <div className="space-y-6">
-          {/* Houses */}
-          <div className="flex gap-6">
-            <Card className="w-1/2 p-6 flex flex-col items-center justify-center border h-56">
-              {house1 ? <img src={house1} alt="House 1" className="w-full h-full object-cover rounded" /> : 
-              <Input placeholder="House 1 URL" onChange={(e) => setHouse1(e.target.value)} />}
+    <div className="relative flex flex-col items-center justify-center min-h-screen p-8">
+    
+    <Button variant="outline" className="absolute top-4 left-4" onClick={() => router.push("/dashboard")}>
+       Back to Dashboard
+    </Button>
+  
+    <h2 className="text-3xl font-semibold mb-6">Customize Your Future Self</h2>
+  
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-6xl">
+    
+      <div className="space-y-6">
+       
+        <div className="flex gap-6">
+          {["house1", "house2"].map((key) => (
+            <Card 
+              key={key} 
+              className="w-1/2 p-6 flex flex-col items-center justify-center border h-64 relative"
+              onMouseEnter={() => setHoveredField(key)}
+              onMouseLeave={() => setHoveredField(null)}
+              onClick={() => handleDeleteImage(key)}
+            >
+              {fields[key] ? (
+                <>
+                  <img src={fields[key]} alt={key} className="w-full h-full object-cover rounded" />
+                  {hoveredField === key && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white">
+                      Click to change image
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Input placeholder={`${key} URL`} onChange={(e) => setFields((prev) => ({ ...prev, [key]: e.target.value }))} />
+              )}
             </Card>
-            <Card className="w-1/2 p-6 flex flex-col items-center justify-center border h-56">
-              {house2 ? <img src={house2} alt="House 2" className="w-full h-full object-cover rounded" /> : 
-              <Input placeholder="House 2 URL" onChange={(e) => setHouse2(e.target.value)} />}
-            </Card>
-          </div>
-
-          {/* Cars */}
-          <div className="flex gap-6">
-            <Card className="w-1/2 p-6 flex flex-col items-center justify-center border h-40">
-              {car1 ? <img src={car1} alt="Car 1" className="w-full h-full object-cover rounded" /> : 
-              <Input placeholder="Car 1 URL" onChange={(e) => setCar1(e.target.value)} />}
-            </Card>
-            <Card className="w-1/2 p-6 flex flex-col items-center justify-center border h-40">
-              {car2 ? <img src={car2} alt="Car 2" className="w-full h-full object-cover rounded" /> : 
-              <Input placeholder="Car 2 URL" onChange={(e) => setCar2(e.target.value)} />}
-            </Card>
-          </div>
-
-          {/* Boat */}
-          <Card className="p-6 flex flex-col items-center justify-center border h-44">
-            {boat ? <img src={boat} alt="Boat" className="w-full h-full object-cover rounded" /> : 
-            <Input placeholder="Boat URL" onChange={(e) => setBoat(e.target.value)} />}
-          </Card>
+          ))}
         </div>
-
-        {/* Right Side: Future Identity */}
-        <div className="space-y-6">
-          {/* Career & Ultimate Goal */}
-          <div className="flex gap-6">
-            <Card className="w-1/2 h-40 p-4 flex flex-col items-center justify-center border">
-              {career ? <img src={career} alt="Career" className="w-full h-full object-cover rounded" /> : 
-              <Input placeholder="Career URL" onChange={(e) => setCareer(e.target.value)} />}
+  
+     
+        <div className="flex gap-6">
+          {["car1", "car2"].map((key) => (
+            <Card 
+              key={key} 
+              className="w-1/2 p-6 flex flex-col items-center justify-center border h-48 relative"
+              onMouseEnter={() => setHoveredField(key)}
+              onMouseLeave={() => setHoveredField(null)}
+              onClick={() => handleDeleteImage(key)}
+            >
+              {fields[key] ? (
+                <>
+                  <img src={fields[key]} alt={key} className="w-full h-full object-cover rounded" />
+                  {hoveredField === key && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white">
+                      Click to change image
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Input placeholder={`${key} URL`} onChange={(e) => setFields((prev) => ({ ...prev, [key]: e.target.value }))} />
+              )}
             </Card>
-            <Card className="w-1/2 h-40 p-4 flex flex-col items-center justify-center border">
-              {ultimateGoal ? <img src={ultimateGoal} alt="Ultimate Goal" className="w-full h-full object-cover rounded" /> : 
-              <Input placeholder="Ultimate Goal URL" onChange={(e) => setUltimateGoal(e.target.value)} />}
-            </Card>
-          </div>
-
-          {/* Hobbies */}
-          <div className="flex gap-6">
-            <Card className="w-1/2 h-40 p-4 flex flex-col items-center justify-center border">
-              {hobby1 ? <img src={hobby1} alt="Hobby 1" className="w-full h-full object-cover rounded" /> : 
-              <Input placeholder="Hobby 1 URL" onChange={(e) => setHobby1(e.target.value)} />}
-            </Card>
-            <Card className="w-1/2 h-40 p-4 flex flex-col items-center justify-center border">
-              {hobby2 ? <img src={hobby2} alt="Hobby 2" className="w-full h-full object-cover rounded" /> : 
-              <Input placeholder="Hobby 2 URL" onChange={(e) => setHobby2(e.target.value)} />}
-            </Card>
-          </div>
-
-          <div className="flex gap-6">
-            <Card className="w-1/2 h-40 p-4 flex flex-col items-center justify-center border">
-              {hobby3 ? <img src={hobby3} alt="Hobby 3" className="w-full h-full object-cover rounded" /> : 
-              <Input placeholder="Hobby 3 URL" onChange={(e) => setHobby3(e.target.value)} />}
-            </Card>
-            <Card className="w-1/2 h-40 p-4 flex flex-col items-center justify-center border">
-              {hobby4 ? <img src={hobby4} alt="Hobby 4" className="w-full h-full object-cover rounded" /> : 
-              <Input placeholder="Hobby 4 URL" onChange={(e) => setHobby4(e.target.value)} />}
-            </Card>
-          </div>
-
-          {/* Pets */}
-          <div className="flex gap-6">
-            <Card className="w-1/2 h-40 p-4 flex flex-col items-center justify-center border">
-              {pet1 ? <img src={pet1} alt="Pet 1" className="w-full h-full object-cover rounded" /> : 
-              <Input placeholder="Pet 1 URL" onChange={(e) => setPet1(e.target.value)} />}
-            </Card>
-            <Card className="w-1/2 h-40 p-4 flex flex-col items-center justify-center border">
-              {pet2 ? <img src={pet2} alt="Pet 2" className="w-full h-full object-cover rounded" /> : 
-              <Input placeholder="Pet 2 URL" onChange={(e) => setPet2(e.target.value)} />}
-            </Card>
-          </div>
+          ))}
         </div>
+  
+      
+        <Card 
+          className="p-6 flex flex-col items-center justify-center border h-72 w-full relative"
+          onMouseEnter={() => setHoveredField("boat")}
+          onMouseLeave={() => setHoveredField(null)}
+          onClick={() => handleDeleteImage("boat")}
+        >
+          {fields.boat ? (
+            <>
+              <img src={fields.boat} alt="Boat" className="w-full h-full object-cover rounded" />
+              {hoveredField === "boat" && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white">
+                  Click to change image
+                </div>
+              )}
+            </>
+          ) : (
+            <Input placeholder="Boat URL" onChange={(e) => setFields((prev) => ({ ...prev, boat: e.target.value }))} />
+          )}
+        </Card>
       </div>
-
-      {/* Buttons */}
-      <div className="mt-6 flex gap-4">
-        <Button variant="outline" onClick={() => router.push("/dashboard")}>
-          Back
-        </Button>
-        <Button onClick={handleSave}>Save Future Self</Button>
+  
+      
+      <div className="space-y-6">
+        
+        <div className="flex gap-6">
+          {["career", "ultimateGoal"].map((key) => (
+            <Card 
+              key={key} 
+              className="w-1/2 h-40 p-4 flex flex-col items-center justify-center border relative"
+              onMouseEnter={() => setHoveredField(key)}
+              onMouseLeave={() => setHoveredField(null)}
+              onClick={() => handleDeleteImage(key)}
+            >
+              {fields[key] ? (
+                <>
+                  <img src={fields[key]} alt={key} className="w-full h-full object-cover rounded" />
+                  {hoveredField === key && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white">
+                      Click to change image
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Input placeholder={`${key} URL`} onChange={(e) => setFields((prev) => ({ ...prev, [key]: e.target.value }))} />
+              )}
+            </Card>
+          ))}
+        </div>
+  
+       
+        <div className="flex gap-6">
+          {["hobby1", "hobby2"].map((key) => (
+            <Card 
+              key={key} 
+              className="w-1/2 h-40 p-4 flex flex-col items-center justify-center border relative"
+              onMouseEnter={() => setHoveredField(key)}
+              onMouseLeave={() => setHoveredField(null)}
+              onClick={() => handleDeleteImage(key)}
+            >
+              {fields[key] ? (
+                <>
+                  <img src={fields[key]} alt={key} className="w-full h-full object-cover rounded" />
+                  {hoveredField === key && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white">
+                      Click to change image
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Input placeholder={`${key} URL`} onChange={(e) => setFields((prev) => ({ ...prev, [key]: e.target.value }))} />
+              )}
+            </Card>
+          ))}
+        </div>
+  
+        <div className="flex gap-6">
+          {["hobby3", "hobby4"].map((key) => (
+            <Card 
+              key={key} 
+              className="w-1/2 h-40 p-4 flex flex-col items-center justify-center border relative"
+              onMouseEnter={() => setHoveredField(key)}
+              onMouseLeave={() => setHoveredField(null)}
+              onClick={() => handleDeleteImage(key)}
+            >
+              {fields[key] ? (
+                <>
+                  <img src={fields[key]} alt={key} className="w-full h-full object-cover rounded" />
+                  {hoveredField === key && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white">
+                      Click to change image
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Input placeholder={`${key} URL`} onChange={(e) => setFields((prev) => ({ ...prev, [key]: e.target.value }))} />
+              )}
+            </Card>
+          ))}
+        </div>
+  
+        
+        <div className="flex gap-6">
+          {["pet1", "pet2"].map((key) => (
+            <Card 
+              key={key} 
+              className="w-1/2 h-60 p-4 flex flex-col items-center justify-center border relative"
+              onMouseEnter={() => setHoveredField(key)}
+              onMouseLeave={() => setHoveredField(null)}
+              onClick={() => handleDeleteImage(key)}
+            >
+              {fields[key] ? (
+                <>
+                  <img src={fields[key]} alt={key} className="w-full h-full object-cover rounded" />
+                  {hoveredField === key && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white">
+                      Click to change image
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Input placeholder={`${key} URL`} onChange={(e) => setFields((prev) => ({ ...prev, [key]: e.target.value }))} />
+              )}
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
+  
+   
+    <div className="mt-6 flex gap-4">
+      <Button className = "w-full" onClick={handleSave}>Save Future Self</Button>
+    </div>
+  </div>
+  
   );
+  
+  
+  
 }

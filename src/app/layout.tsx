@@ -20,7 +20,7 @@ export default function RootLayout({
         >
           <div className="min-h-screen">
             <Navbar />
-            <main>{children}</main> {/* Removed extra padding */}
+            <main>{children}</main> 
           </div>
         </ThemeProvider>
       </body>

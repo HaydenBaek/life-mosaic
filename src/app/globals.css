@@ -2,6 +2,105 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 🔹 Background Configuration */
+:root {
+  --color-bg: #0a0a0a;
+  --color-particle: #fff;
+  --spacing: 2560px;
+  --time-1: 100s;  /* Slower animation */
+  --time-2: 120s;
+  --time-3: 150s;
+  --time-4: 180s;
+  --time-5: 220s;
+}
+
+/* 🔹 Full Page Background */
+.page-bg, .animation-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: -10;
+  background: var(--color-bg);
+}
+
+/* 🔹 Stars (Particles) */
+.particle {
+  position: absolute;
+  background: var(--color-particle);
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+/* 🔹 Star Animation */
+@keyframes animParticle {
+  from {
+    transform: translateY(100vh); /* Start from bottom */
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100vh); /* Move to top */
+    opacity: 0.3;
+  }
+}
+
+/* 🌟 Ultra-Dense Small Stars */
+.particle-1 {
+  animation: animParticle var(--time-1) linear infinite;
+  height: 2px;
+  width: 2px;
+  opacity: 0.6;
+}
+
+/* 🌟 Medium Stars */
+.particle-2 {
+  animation: animParticle var(--time-2) linear infinite;
+  height: 3px;
+  width: 3px;
+  opacity: 0.8;
+}
+
+/* 🌟 Large Stars */
+.particle-3 {
+  animation: animParticle var(--time-3) linear infinite;
+  height: 4px;
+  width: 4px;
+  opacity: 0.9;
+}
+
+/* 🌟 Extra Large Stars */
+.particle-4 {
+  animation: animParticle var(--time-4) linear infinite;
+  height: 5px;
+  width: 5px;
+  opacity: 1;
+}
+
+/* 🌠 Shooting Stars */
+.shooting-star {
+  position: absolute;
+  width: 2px;
+  height: 80px;
+  background: white;
+  opacity: 0.7;
+  transform: rotate(-45deg);
+  animation: shooting 3s linear infinite;
+}
+@keyframes shooting {
+  from {
+    transform: translateX(100vw) translateY(-100vh);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100vw) translateY(100vh);
+    opacity: 0;
+  }
+}
+
+
+
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
