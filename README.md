@@ -1,7 +1,7 @@
 # LifeMosaic
 
 ## Hosted Link
-[Click here to access the web app](http://44.203.32.119:8080/)
+[Click here to access the web app](http://34.227.80.231:8080/)
 
 ## Demo Video
 [Watch the demo here](https://youtu.be/E6KA0_gnDHU)
