@@ -23,10 +23,7 @@ export default function NasaApodPage() {
     } else {
       async function fetchApod() {
         try {
-          const apiKey = process.env.NEXT_PUBLIC_NASA_API_KEY;
-          if (!apiKey) throw new Error("API key is missing. Set NEXT_PUBLIC_NASA_API_KEY in .env.local");
-
-          const response = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${apiKey}`);
+          const response = await fetch("/api/nasa"); // 🔥 Fetch from your API route
           if (!response.ok) throw new Error("Failed to fetch NASA APOD");
 
           const data = await response.json();
@@ -49,23 +46,22 @@ export default function NasaApodPage() {
     <div className="relative flex flex-col items-center justify-center min-h-screen p-6">
       
       <div className="fixed inset-0 -z-10">
-  <div className="page-bg"></div>
-  <div className="animation-wrapper">
-    {/* Generate 100 stars dynamically */}
-    {[...Array(100)].map((_, i) => (
-      <div
-        key={i}
-        className={`particle particle-${(i % 5) + 1}`}
-        style={{
-          top: `${Math.random() * 100}vh`,
-          left: `${Math.random() * 100}vw`,
-          animationDelay: `${Math.random() * 10}s`,
-        }}
-      ></div>
-    ))}
-  </div>
-</div>
-
+        <div className="page-bg"></div>
+        <div className="animation-wrapper">
+          {/* Generate 100 stars dynamically */}
+          {[...Array(100)].map((_, i) => (
+            <div
+              key={i}
+              className={`particle particle-${(i % 5) + 1}`}
+              style={{
+                top: `${Math.random() * 100}vh`,
+                left: `${Math.random() * 100}vw`,
+                animationDelay: `${Math.random() * 10}s`,
+              }}
+            ></div>
+          ))}
+        </div>
+      </div>
 
       {/* Title */}
       <h1 className="text-3xl font-bold text-center text-[hsl(var(--foreground))]">NASA Astronomy Picture of the Day</h1>

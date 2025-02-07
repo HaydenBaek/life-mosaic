@@ -1,21 +1,26 @@
-# Use official Node.js image
-FROM node:18-alpine
+# Use a lightweight Node.js 20 base image
+FROM node:20-alpine
 
-# Set working directory inside container
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy package.json and install dependencies
-COPY package.json package-lock.json ./
-RUN npm install --only=production
+# Copy package.json and package-lock.json first (for better caching)
+COPY package*.json ./
 
-# Copy the entire project
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy the rest of the application files
 COPY . .
 
-# Build Next.js application
+# Build the Next.js app
 RUN npm run build
 
-# Expose port 3000 (Next.js default port)
+# Set environment variable for Next.js
+ENV PORT=3000
+
+# Expose the application port
 EXPOSE 3000
 
-# Start the application
-CMD ["npm", "start"]
+# Start the Next.js application
+CMD ["npm", "run", "start"]

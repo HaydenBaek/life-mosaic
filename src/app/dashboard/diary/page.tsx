@@ -19,7 +19,7 @@ type DiaryEntry = {
 export default function DiaryPage() {
   const router = useRouter();
   const [entry, setEntry] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>([]);
@@ -140,7 +140,8 @@ export default function DiaryPage() {
               </Button>
             </PopoverTrigger>
             <PopoverContent align="start" className="w-auto p-0">
-              <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} />
+            <Calendar selected={selectedDate} onChange={setSelectedDate} />
+
             </PopoverContent>
           </Popover>
         </div>

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
+// Goal type definition
 type Goal = {
   id: number;
   goal_name: string;
@@ -40,20 +41,20 @@ export default function GoalsPage() {
 
   useEffect(() => {
     if (!userId) return;
-
-    const fetchGoals = async () => {
-      try {
-        const res = await fetch(`/api/goals?user_id=${userId}`);
-        if (!res.ok) throw new Error("Failed to fetch goals");
-        const data = await res.json();
-        setGoals(data || []);
-      } catch (error) {
-        console.error("Failed to load goals:", error);
-      }
-    };
-
     fetchGoals();
   }, [userId]);
+
+  const fetchGoals = async () => {
+    if (!userId) return;
+    try {
+      const res = await fetch(`/api/goals?user_id=${userId}`);
+      if (!res.ok) throw new Error("Failed to fetch goals");
+      const data = await res.json();
+      setGoals(data || []);
+    } catch (error) {
+      console.error("Failed to load goals:", error);
+    }
+  };
 
   const handleAddGoal = async () => {
     if (!goalName.trim() || !imageUrl.trim() || !price.trim()) {
@@ -73,15 +74,16 @@ export default function GoalsPage() {
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error("Failed to save goal");
 
-      setGoals([{ id: Date.now(), goal_name: goalName, image_url: imageUrl, price: parseFloat(price) }, ...goals]);
+
+      //REFRESING AFTER ADDING THE GOAL
+      fetchGoals(); 
       setGoalName("");
       setImageUrl("");
       setPrice("");
-    } catch {
-      console.error("Failed to add goal.");
+    } catch (error) {
+      console.error("Failed to add goal:", error);
     }
   };
 
@@ -98,12 +100,7 @@ export default function GoalsPage() {
         body: JSON.stringify({ id: goal.id, user_id: userId }),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        console.error("Failed to delete goal:", data.error || "Unknown error");
-        return;
-      }
+      if (!res.ok) throw new Error("Failed to delete goal");
 
       setGoals((prevGoals) => prevGoals.filter((g) => g.id !== goal.id));
       setCompletedGoal(goal);

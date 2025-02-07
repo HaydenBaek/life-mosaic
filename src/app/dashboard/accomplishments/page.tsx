@@ -6,10 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon, Trash2 } from "lucide-react";
+import { format } from "date-fns";
 
 type Accomplishment = {
   id: number;
@@ -23,10 +23,11 @@ export default function AccomplishmentsPage() {
   const [accomplishments, setAccomplishments] = useState<Accomplishment[]>([]);
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
+
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -35,6 +36,7 @@ export default function AccomplishmentsPage() {
       setUserId(user.id);
     }
   }, []);
+
 
   useEffect(() => {
     if (!userId) return;
@@ -63,6 +65,7 @@ export default function AccomplishmentsPage() {
     fetchAccomplishments();
   }, [userId]);
 
+  
   const addAccomplishment = async () => {
     if (!newTitle || !newDescription || !selectedDate) {
       setError("All fields are required.");
@@ -80,7 +83,7 @@ export default function AccomplishmentsPage() {
       user_id: userId,
       title: newTitle,
       description: newDescription,
-      achievement_date: format(selectedDate, "yyyy-MM-dd"),
+      achievement_date: selectedDate ? format(selectedDate, "yyyy-MM-dd") : "",
     };
 
     try {
@@ -108,6 +111,7 @@ export default function AccomplishmentsPage() {
     }
   };
 
+
   const removeAccomplishment = async (id: number) => {
     try {
       const res = await fetch("/api/accomplishments", {
@@ -129,52 +133,64 @@ export default function AccomplishmentsPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 relative">
+      
       <Button variant="outline" className="absolute top-4 left-4" onClick={() => router.push("/dashboard")}>
         ← Back to Dashboard
       </Button>
 
+   
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-[hsl(var(--foreground))]">Your Personal Achievements</h1>
         <p className="text-muted-foreground text-lg mt-2">Every small win brings you closer to your goals.</p>
       </div>
 
+     
       {error && <p className="text-red-500">{error}</p>}
       {success && <p className="text-green-500">{success}</p>}
 
+    
       <div className="w-full max-w-lg mb-6">
         <Input placeholder="Title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="mb-4" />
         <Textarea placeholder="Description" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} className="mb-4" />
 
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline">
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="start">
-            <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} />
-          </PopoverContent>
-        </Popover>
+       
+        <div className="mb-4">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-auto p-0">
+              <Calendar selected={selectedDate} onChange={setSelectedDate} />
+            </PopoverContent>
+          </Popover>
+        </div>
 
-        <Button onClick={addAccomplishment} className="w-full mt-4">
+        <Button onClick={addAccomplishment} className="w-full">
           Add Accomplishment
         </Button>
       </div>
 
+  
       <div className="relative w-full max-w-2xl">
         <div className="absolute left-1/2 transform -translate-x-1/2 w-1 bg-gray-300 h-full"></div>
 
+     
         {accomplishments.length === 0 && (
           <div className="flex justify-center relative mb-6">
             <Card className="p-4 w-80 shadow-lg border text-center">
               <h3 className="font-semibold text-lg">How Accomplishments Work</h3>
-              <p className="text-sm text-muted-foreground">Add accomplishments above. Your achievements will be displayed in a timeline.</p>
+              <p className="text-sm text-muted-foreground">
+                Add accomplishments above. Your achievements will be displayed in a timeline.
+              </p>
             </Card>
             <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-primary rounded-full"></div>
           </div>
         )}
 
+        
         <div className="space-y-6">
           {accomplishments.map((item, index) => (
             <div key={item.id} className={`flex ${index % 2 === 0 ? "justify-start" : "justify-end"} relative`}>

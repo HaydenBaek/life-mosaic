@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LogOutIcon } from "lucide-react"; //    Import Logout Icon
+import { LogOutIcon } from "lucide-react";
 import { BookOpenIcon, TargetIcon, UsersIcon, CheckCircleIcon } from "lucide-react";
 
-// List of dashboard actions
 const actions = [
   {
     title: "Diary",
@@ -51,31 +50,20 @@ export default function Dashboard() {
   useEffect(() => {
     const storedQuote = localStorage.getItem("quoteOfTheDay");
     const storedDate = localStorage.getItem("quoteDate");
-    const today = new Date().toISOString().split("T")[0]; // Format as YYYY-MM-DD
+    const today = new Date().toISOString().split("T")[0];
 
     if (storedQuote && storedDate === today) {
       setQuote(JSON.parse(storedQuote));
     } else {
       async function fetchQuote() {
-        const apiKey = process.env.NEXT_PUBLIC_API_NINJAS_KEY;
-        if (!apiKey) {
-          setError("Missing API key: Make sure NEXT_PUBLIC_API_NINJAS_KEY is set in .env.local");
-          return;
-        }
-
         try {
-          const response = await fetch("https://api.api-ninjas.com/v1/quotes", {
-            headers: { "X-Api-Key": apiKey },
-          });
-
+          const response = await fetch("/api/quotes"); 
           if (!response.ok) throw new Error("Failed to fetch quote");
 
           const data = await response.json();
-          const newQuote = data[0];
-
-          localStorage.setItem("quoteOfTheDay", JSON.stringify(newQuote));
+          localStorage.setItem("quoteOfTheDay", JSON.stringify(data));
           localStorage.setItem("quoteDate", today);
-          setQuote(newQuote);
+          setQuote(data);
         } catch (error) {
           setError("Failed to load quote. Please try again.");
         }
@@ -86,7 +74,15 @@ export default function Dashboard() {
   }, []);
 
   const handleLogout = () => {
-    router.push("/"); //    Redirect user to home page
+    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; Secure";
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    router.push("/");
+    window.history.replaceState(null, "", "/");
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   return (
@@ -147,16 +143,15 @@ export default function Dashboard() {
           </Card>
         ))}
       </div>
-{/* 🔹 Secret Space Mode Button (Bottom Left) */}
-<Button 
-  variant="ghost" 
-  onClick={() => router.push("/nasa-apod")} 
-  className="absolute bottom-6 right-6 text-xl p-2"
->
-  🌌
-</Button>
 
-
+      {/* 🔹 Secret Space Mode Button (Bottom Right) */}
+      <Button 
+        variant="ghost" 
+        onClick={() => router.push("/nasa-apod")} 
+        className="absolute bottom-6 right-6 text-xl p-2"
+      >
+        🌌
+      </Button>
     </div>
   );
 }
