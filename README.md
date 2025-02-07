@@ -60,7 +60,7 @@ Initially, API keys for the **NASA APOD API** and **Ninja Quotes API** were expo
 ---
 
 ## Easter Egg
-There is a **hidden button** throughout the web app—an Easter egg that I will reveal soon. See if you can find it!
+There is a **hidden button** throughout the web app, which is an Easter egg that I will reveal soon. See if you can find it!
 
 ---
 
