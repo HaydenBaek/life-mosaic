@@ -3,20 +3,18 @@ import "./globals.css";
 
 import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/components/theme-provider";
-
+import AuthRedirect from "@/components/AuthRedirect"; // ✅ Import AuthRedirect
 
 export const metadata: Metadata = {
   icons: {
-    icon: "/lifemosaic.ico", 
-    apple: "/lifemosaic.ico", 
+    icon: "/lifemosaic.ico",
+    apple: "/lifemosaic.ico",
   },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
@@ -26,6 +24,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <AuthRedirect /> {/* ✅ Ensure logged-in users can't access login page */}
           <div className="min-h-screen">
             <Navbar />
             <main>{children}</main>

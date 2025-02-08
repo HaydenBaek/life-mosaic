@@ -6,18 +6,9 @@ import { usePathname } from "next/navigation";
 import { ModeToggle } from "./ModeToggle";
 import { PaletteIcon } from "lucide-react"; // 🎨 Import Palette Icon
 
-
-
 function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const pathname = usePathname(); // Get current path
-  
-  useEffect(() => {
-    console.log("🔹 Checking API Keys...");
-    console.log("NEXT_PUBLIC_NASA_API_KEY:", process.env.NEXT_PUBLIC_NASA_API_KEY);
-    console.log("NEXT_PUBLIC_API_NINJAS_KEY:", process.env.NEXT_PUBLIC_API_NINJAS_KEY);
-  }, []);  
-
 
   useEffect(() => {
     // Check if user is logged in (Replace this with real authentication check)

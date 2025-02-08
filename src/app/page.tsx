@@ -20,7 +20,7 @@ export default function Home() {
         </p>
       </div>
 
-      {/* CTA Button */}
+      
       <Button
         onClick={() => router.push("/login")}
         className={cn(
@@ -30,12 +30,11 @@ export default function Home() {
         Get Started
       </Button>
 
-      {/* Subtext */}
+     
       <p className="text-muted-foreground text-sm mt-6">
         Transform your achievements into a beautiful journey.
       </p>
 
-      {/* 📝 Why I Created LifeMosaic */}
       <div className="mt-12 max-w-2xl text-center">
         <h2 className="text-3xl font-bold text-foreground">Why I Created LifeMosaic</h2>
         <p className="text-lg text-muted-foreground mt-4">

@@ -144,10 +144,10 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* 🔹 Secret Space Mode Button (Bottom Right) */}
+      {/*Secrete Butotn*/}
       <Button 
         variant="ghost" 
-        onClick={() => router.push("/nasa-apod")} 
+        onClick={() => router.push("/dashboard/nasa-apod")} 
         className="absolute bottom-6 right-6 text-xl p-2"
       >
         🌌
